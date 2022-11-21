@@ -396,12 +396,6 @@ static int init_sgx_attestation(struct pseudo_node* attestation) {
     /* always add /dev/attestation/attestation_type file, even if it is "none" */
     pseudo_add_str(attestation, "attestation_type", attestation_type_load);
 
-    if (!strcmp(g_pal_public_state->attestation_type, "none")) {
-        log_debug("host is Linux-SGX but remote attestation type is 'none', adding only "
-                  "/dev/attestation/attestation_type file and skipping others (report, etc.)");
-        return 0;
-    }
-
     log_debug("host is Linux-SGX and remote attestation type is '%s', adding SGX-specific "
               "/dev/attestation/ files: report, quote, etc.", g_pal_public_state->attestation_type);
 
@@ -415,6 +409,12 @@ static int init_sgx_attestation(struct pseudo_node* attestation) {
 
     pseudo_add_str(attestation, "my_target_info", &my_target_info_load);
     pseudo_add_str(attestation, "report", &report_load);
+
+    if (!strcmp(g_pal_public_state->attestation_type, "none")) {
+        log_debug("skip quoting for host 'Linux-SGX' host and remote attestation type 'none'");
+        return 0;
+    }
+
     pseudo_add_str(attestation, "quote", &quote_load);
 
     /* TODO: This file is deprecated in v1.2, remove 2 versions later. */
